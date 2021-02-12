@@ -1,8 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import { MapContainer, TileLayer } from 'react-leaflet';
-
-
 import 'leaflet/dist/leaflet.css';
 
 import MapMarker from '../../assets/images/map-marker.svg';
@@ -49,7 +47,7 @@ const OrphanagesMap: React.FC = () => {
             <main>
                 <MapContainer                 
                     center={[-20.4648844, -54.6452804 ]}
-                    zoom={13}
+                    zoom={14} 
                     style={{ width: '100%', height: '100%' }} 
                 >
                     <TileLayer url={`https://api.mapbox.com/styles/v1/mapbox/light-v10/tiles/256/{z}/{x}/{y}@2x?access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`} />
