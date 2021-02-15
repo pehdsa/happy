@@ -1,0 +1,22 @@
+@import 'base';
+
+.page-map {
+    display: grid;    
+    grid-template-columns: 400px 1fr;
+    height: 100vh;
+
+    & aside { 
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: linear-gradient(329.54deg, #15B6D6 0%, #15D6D6 100%); 
+        padding: 80px;
+    }
+
+    & aside img { display: block;width: 64px;height: 72px;margin-bottom: 80px }
+    & aside h1 { font-size: 40px;line-height: 42px;padding-bottom: 24px; }
+    & aside p { font-size: 18px;line-height: 28px }
+    & aside .location { display: flex; flex-direction: column; }
+
+    & main { background-color: #000 }
+}
