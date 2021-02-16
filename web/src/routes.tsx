@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import Home from './pages/Landing';
 import OrphanagesMap from './pages/OrphanagesMap';
+import './styles/css/base.css';
 
 export default function Routes() {
     return (

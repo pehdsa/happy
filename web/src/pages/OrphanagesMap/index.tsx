@@ -2,7 +2,6 @@ import React from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 
 import 'leaflet/dist/leaflet.css';
-import '../../styles/css/orphanagesMap.css';
 import MapMarker from '../../assets/images/map-marker.svg';
 
 const OrphanagesMap: React.FC = () => {

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { FiArrowRight } from 'react-icons/fi'
 
 import Logo from '../../assets/images/logo.svg';
-import '../../styles/css/landing.css';
 
 const CompLanding: React.FC = () => {
     return (
