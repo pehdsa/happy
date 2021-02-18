@@ -1,12 +1,31 @@
-import React from 'react';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import React, { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { FiArrowRight, FiPlus } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
+import api from '../../services/api';
 
-import 'leaflet/dist/leaflet.css';
 import MapMarker from '../../assets/images/map-marker.svg';
+import MapIcon from '../../utils/mapIcon';
 
-const OrphanagesMap: React.FC = () => {
+interface Orphanage {
+    id: number,
+    name: string; 
+    latitude: number;
+    longitude: number; 
+}
+interface OrphanageParams {
+    id: string;
+}
+
+function OrphanagesMap() {
+
+    const [ orphanages, setOrphanages ] = useState<Orphanage[]>([]);
     
-    //const center = [-20.4648844, -54.6452804 ];
+    useEffect(() => {
+        api.get('/orphanages').then(resp => {
+            setOrphanages(resp.data);
+        })
+    },[]);
 
     return (
         <div className="page-map">
@@ -28,7 +47,32 @@ const OrphanagesMap: React.FC = () => {
                     style={{ width: '100%', height: '100%' }} 
                 >
                     <TileLayer url={`https://api.mapbox.com/styles/v1/mapbox/light-v10/tiles/256/{z}/{x}/{y}@2x?access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`} />
+
+                    { orphanages.map(orphanage => {
+                        return (
+                            <Marker 
+                                key={ orphanage.id }
+                                icon={ MapIcon }
+                                position={[ orphanage.latitude, orphanage.longitude ]}
+                            >
+                                
+                                <Popup closeButton={ false } minWidth={ 240 } maxWidth={ 240 } className="map-popup">
+                                    { orphanage.name }
+                                    <Link to={`/orphanage/${orphanage.id}`}>
+                                        <FiArrowRight size={ 22 } color="#FFF" />
+                                    </Link>
+                                </Popup>
+
+                            </Marker>
+                        )
+                    }) }
+
                 </MapContainer> 
+
+                <Link to="/orphanages/create" className="create-orphanage">
+                    <FiPlus size={ 32 } color="#FFF" />
+                </Link>
+
             </main>
         </div>
     );
