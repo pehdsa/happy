@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FiClock, FiInfo } from "react-icons/fi";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import { useParams } from "react-router-dom";
+import api from '../../services/api';
 
 import Sidebar from '../../components/Sidebar';
 import MapIcon from '../../utils/mapIcon';
@@ -26,8 +27,19 @@ interface Orphanage {
 export default function Orphanage() {
 
     const params = useParams<OrphanageParams>();
-    const [orphanage, setOrphanage] = useState<Orphanage>( );
-    const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const [ activeImageIndex, setActiveImageIndex ] = useState(0);
+
+    const [ orphanage, setOrphanage ] = useState<Orphanage>();
+    
+    useEffect(() => {
+        api.get(`/orphanage/${params.id}`).then(resp => {
+            setOrphanage(resp.data);
+        })
+    },[ params.id ]);
+
+    if (!orphanage) {
+        return <p>Carregando</p>
+    }
 
     return (
         <div className="page-orphanage">
@@ -36,21 +48,24 @@ export default function Orphanage() {
 
             <main>
                 <div className="orphanage-details">
-                <img src="" alt="" />
+                
+                <img src={orphanage.images[activeImageIndex].url} alt={orphanage.name} />
 
                 <div className="images">
-                    {/* orphanage.images.map((image, idx) => {
+                    { orphanage?.images.length > 0 && orphanage?.images.map((image, idx) => {
                     return (
                         <button 
-                        key={image.id} 
-                        className={activeImageIndex === idx ? "active" : ""} 
-                        type="button"
-                        onClick={() => setActiveImageIndex(idx)}
+                            key={image.id} 
+                            className={activeImageIndex === idx ? "active" : ""} 
+                            type="button"
+                            onClick={() => setActiveImageIndex(idx)}
                         >
-                        <img src={image.url} alt={orphanage.name} />
+                            
+                            <img src={image.url} alt={orphanage.name} />
+
                         </button>
                     );
-                    }) */}
+                    })}
                 </div>
                 
                 <div className="orphanage-details-content">
@@ -74,10 +89,8 @@ export default function Orphanage() {
                             
                         </MapContainer>
 
-                        <footer>
-                            {/* <a href="https://www.google.com/maps/dir/?api=1&origin=34.1030032,-118.41046840000001&destination=34.059808,-118.368152">Ver rotas no Google Maps</a> }
-                            <a target="_blank" rel='noopener noreferrer' href={`https://www.google.com/maps/dir/?api=1&destination=${orphanage.latitude},${orphanage.longitude}`}>Ver rotas no Google Maps</a>
-                            { */ }
+                        <footer>                            
+                            <a target="_blank" rel='noopener noreferrer' href={`https://www.google.com/maps/dir/?api=1&destination=${orphanage.latitude},${orphanage.longitude}`}>Ver rotas no Google Maps</a>                            
                         </footer>
                     </div>
 
@@ -90,22 +103,22 @@ export default function Orphanage() {
                     <div className="hour">
                         <FiClock size={32} color="#15B6D6" />
                         Segunda à Sexta <br />
-                        {/*orphanage.opening_hours*/}
+                        {orphanage.opening_hours}
                     </div>
 
-                    {/*orphanage.open_on_weekends ? (
+                    {orphanage.open_on_weekends ? (
                         <div className="open-on-weekends">
-                        <FiInfo size={32} color="#39CC83" />
-                        Atendemos <br />
-                        fim de semana
+                            <FiInfo size={32} color="#39CC83" />
+                            Atendemos <br />
+                            fim de semana
                         </div>
                     ) : (
                         <div className="open-on-weekends dont-open">
-                        <FiInfo size={32} color="#FF669D" />
-                        Não Atendemos <br />
-                        fim de semana
+                            <FiInfo size={32} color="#FF669D" />
+                            Não Atendemos <br />
+                            fim de semana
                         </div>
-                    )*/}
+                    )}
                     
                     </div>
                     

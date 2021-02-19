@@ -1,17 +1,79 @@
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import React, { useState, FormEvent, ChangeEvent } from 'react';
+import { MapContainer, TileLayer, Marker, useMapEvent, Popup, } from 'react-leaflet';
 import { FiPlus } from 'react-icons/fi';
+import api from '../../services/api';
+import { useHistory } from 'react-router-dom';
 
 import Sidebar from '../../components/Sidebar';
 import MapIcon from '../../utils/mapIcon';
 
-const CreateOrphanage: React.FC = () => {
+function CreateOrphanage() {
 
-    function handlerSubmit() {
+    const history = useHistory()
+
+    const [position, setPosition] = useState({ lat: 0, lng: 0 });
+    const [ name, setName ] = useState('');
+    const [ about, setAbout ] = useState('');
+    const [ instructions, setInstructions ] = useState('');
+    const [ opening_hours, setOpeningHours ] = useState('');
+    const [ open_on_weekends, setOpenOnWeekends ] = useState(true);
+
+    const [ images, setImages ] = useState<File[]>();
+    const [ previewImages, setPreviewImages ] = useState<string[]>();
+
+    function SetViewOnClick() {        
+        
+        useMapEvent('click', (e) => {
+            setPosition(e.latlng);
+        });
+    
+        return position === null ? null : (
+            <Marker icon={MapIcon} position={position}>
+                <Popup>You are here</Popup>
+            </Marker>
+        )
+    }
+
+    async function handlerSubmit(event: FormEvent) {
+        event.preventDefault();
+
+        const { lat, lng } = position;
+
+        const data = new FormData();
+        data.append('name', name);
+        data.append('about', about);
+        data.append('instructions', instructions);
+        data.append('opening_hours', opening_hours);
+        data.append('open_on_weekends', String(open_on_weekends));
+        data.append('latitude', String(lat));
+        data.append('longitude', String(lng));
+
+        images?.forEach(image => {
+            data.append('images', image);
+        });
+        
+        await api.post('/orphanages', data);
+
+        alert('Cadastro realizado com sucesso');
+
+        history.push('/app');
 
     }
 
-    function handlerSelectImage() {
+    function handlerSelectImage(event: ChangeEvent<HTMLInputElement>) {
+        if (!event.target.files) {
+            return;
+        }
+        const selectedImages = Array.from(event.target.files)
+        setImages(selectedImages);        
+
+        const selectedImagesPreview = selectedImages.map(image => {
+            return URL.createObjectURL(image);
+        });
+        setPreviewImages(selectedImagesPreview);
+    }
+
+    function handleDeleteImage(index: number) {
 
     }
 
@@ -26,62 +88,64 @@ const CreateOrphanage: React.FC = () => {
                     <legend>Dados</legend>
 
                     <MapContainer 
-                    center={[-20.4648844, -54.6452804]} 
-                    style={{ width: '100%', height: 280 }}
-                    zoom={15}
-                    //onclick={handlerMapClick}
+                        center={[-20.464651058484478, -54.61569786071778]} 
+                        style={{ width: '100%', height: 280 }}
+                        zoom={13}
                     >
                         <TileLayer url={`https://api.mapbox.com/styles/v1/mapbox/light-v10/tiles/256/{z}/{x}/{y}@2x?access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`} />
 
-                        <Marker interactive={false} icon={MapIcon} position={[-20.4648844, -54.6452804]} />
+                        <SetViewOnClick />
 
                     </MapContainer>
 
                     <div className="input-block">
-                    <label htmlFor="name">Nome</label>
-                    <input 
-                        id="name"
-                        //value={name}
-                        //onChange={event => setName(event.target.value)}
-                    />
+                        <label htmlFor="name">Nome</label>
+                        <input 
+                            id="name"
+                            value={name}
+                            onChange={event => setName(event.target.value)}
+                        />
                     </div>
 
                     <div className="input-block">
-                    <label htmlFor="about">Sobre <span>Máximo de 300 caracteres</span></label>
-                    <textarea 
-                        id="about" 
-                        maxLength={300} 
-                        //value={about}
-                        //onChange={event => setAbout(event.target.value)}
-                    />
+                        <label htmlFor="about">Sobre <span>Máximo de 300 caracteres</span></label>
+                        <textarea 
+                            id="about" 
+                            maxLength={300} 
+                            value={about}
+                            onChange={event => setAbout(event.target.value)}
+                        />
                     </div>
 
                     {/* Upload de images */}
                     <div className="input-block">
-                    <label htmlFor="images">Fotos</label>
+                        <label htmlFor="images">Fotos</label>
 
-                    <div className="images-container">
-                        {/* fazer um Preview das imagens /}
-                        {previewImage.map((image, idx) => {
-                        return (
-                            <div key={image} className='content-image'>
-                            <img src={image} alt={name} />
-                            <button 
-                                onClick={()=> handleDeleteImage(idx)}
-                                className="delete-img" 
-                                type="button">
-                                X
-                            </button>
-                            </div>
-                        )
-                        })*/}
+                        <div className="images-container">
+                            
+                            {/* fazer um Preview das imagens */}
+                            { previewImages?.map((image, index) => {
+                                return (
+                                    <div key={image} className='content-image'>
+                                        <img src={image} alt={name} />
+                                        <button 
+                                            onClick={()=> handleDeleteImage(index)}
+                                            className="delete-img" 
+                                            type="button"
+                                        >
+                                            X
+                                        </button>
+                                    </div>
+                                )
+                            })}
 
-                        <label htmlFor='image[]' className="new-image">
-                        <FiPlus size={24} color="#15b6d6" />
-                        </label>
-                    </div>
-                    
-                    <input multiple onChange={handlerSelectImage} type="file" id="image[]" />
+                            <label htmlFor='image[]' className="new-image">
+                                <FiPlus size={24} color="#15b6d6" />
+                            </label>
+
+                        </div>
+                        
+                        <input multiple onChange={handlerSelectImage} type="file" id="image[]" />
                     </div>
 
                 </fieldset>
@@ -92,18 +156,18 @@ const CreateOrphanage: React.FC = () => {
                     <label htmlFor="instructions">Instruções</label>
                     <textarea 
                         id="instructions" 
-                        //value={instructions}
-                        //onChange={event => setInstructions(event.target.value)}
+                        value={instructions}
+                        onChange={event => setInstructions(event.target.value)}
                     />
                     </div>
 
                     <div className="input-block">
-                    <label htmlFor="opening_hours">Horário de funcionamento</label>
-                    <input 
-                        id="opening_hours" 
-                        //value={opening_hours}
-                        //onChange={event => setOpening_hours(event.target.value)}
-                    />
+                        <label htmlFor="opening_hours">Horário de funcionamento</label>
+                        <input 
+                            id="opening_hours" 
+                            value={opening_hours}
+                            onChange={event => setOpeningHours(event.target.value)}
+                        />
                     </div>
 
                     <div className="input-block">
@@ -111,17 +175,17 @@ const CreateOrphanage: React.FC = () => {
 
                     <div className="button-select">
                         <button 
-                        type="button" 
-                        //className={open_on_weekends ? "active" : ""}
-                        //onClick={()=> setOpen_on_weekends(true)}
+                            type="button" 
+                            className={ open_on_weekends ? "active" : "" }
+                            onClick={()=> setOpenOnWeekends(true)}
                         >
                             Sim
                         </button>
                         
                         <button 
-                        type="button"
-                        //className={!open_on_weekends ? "active" : ""}
-                        //onClick={()=> setOpen_on_weekends(false)}
+                            type="button"
+                            className={ !open_on_weekends ? "active" : "" }
+                            onClick={()=> setOpenOnWeekends(false)}
                         >
                             Não
                         </button>
